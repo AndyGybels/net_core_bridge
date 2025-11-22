@@ -1,0 +1,3 @@
+[submodule "custom_components/net_core_bridge/HomeAssistantCore"]
+	path = custom_components/net_core_bridge/HomeAssistantCore
+	url = https://github.com/AndyGybels/HomeAssistantCore.git

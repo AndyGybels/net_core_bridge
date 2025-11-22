@@ -2,8 +2,12 @@ import sys
 import grpc
 from homeassistant.core import HomeAssistant
 
-from .hacore_pb2_grpc import EventInterceptorStub
-from .state_interceptor_pb2_grpc import StateInterceptorStub
+# Correct gRPC client imports based on your proto filenames
+from .clients.event_interceptor_pb2_grpc import EventInterceptorStub
+from .clients.state_interceptor_pb2_grpc import StateInterceptorStub
+from .clients.entity_platform_pb2_grpc import EntityPlatformInterceptorStub
+
+# Interceptors
 from .interceptors.event_interceptor import EventBusInterceptor
 from .interceptors.entity_platform_interceptor import EntityPlatformInterceptor
 from .interceptors.state_interceptor import StateMachineInterceptor
@@ -19,12 +23,13 @@ class NetCoreBridge:
         self.channel = None
         self.event_client = None
         self.state_client = None
+        self.entity_platform_client = None
 
         self._init_grpc()
 
-        # Interceptors
+        # Apply interceptors
         EventBusInterceptor(hass, self.event_client).apply()
-        EntityPlatformInterceptor(hass, self.event_client).apply()
+        EntityPlatformInterceptor(hass, self.entity_platform_client).apply()
         StateMachineInterceptor(hass, self.state_client).apply()
 
         hass.logger.info("net_core_bridge: All interceptors initialized.")
@@ -39,7 +44,10 @@ class NetCoreBridge:
             target = "unix:/tmp/homeassistant_core.sock"
 
         self.channel = grpc.aio.insecure_channel(target)
+
+        # Instantiate the stubs
         self.event_client = EventInterceptorStub(self.channel)
         self.state_client = StateInterceptorStub(self.channel)
+        self.entity_platform_client = EntityPlatformInterceptorStub(self.channel)
 
         self.hass.logger.info(f"net_core_bridge: gRPC target = {target}")
