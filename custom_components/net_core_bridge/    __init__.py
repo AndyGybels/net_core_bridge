@@ -1,5 +1,6 @@
 from .self_test import run_bridge_self_test
 from .bridge import NetCoreBridge
+import time
 
 
 async def async_setup(hass, config):
